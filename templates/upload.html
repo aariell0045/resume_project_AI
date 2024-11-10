@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Upload</title>
+    <style>
+        /* Basic styling for popup */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .popup-button, .upload-btn {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .upload-btn:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <button class="popup-button" onclick="openPopup()">Upload Resume</button>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <h2>Upload Resume</h2>
+        <input type="file" id="fileInput" accept=".pdf,.txt">
+        <button class="upload-btn" id="submitButton" type="button" onclick="uploadFile()">Submit</button>
+        <button class="upload-btn" onclick="closePopup()">Cancel</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function openPopup() {
+            document.getElementById("popup").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+            console.log("Popup opened");
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("result").innerHTML = "";
+            console.log("Popup closed");
+        }
+
+        function uploadFile() {
+            console.log("Starting uploadFile function");
+
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file to upload.");
+                return;
+            }
+
+            console.log("File selected:", file);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            console.log("Sending fetch request to server...");
+
+            fetch("http://127.0.0.1:5000/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                console.log("Response received from server:", response);
+
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();  // Parse response as JSON
+                } else {
+                    throw new Error("Server did not return JSON");
+                }
+            })
+            .then(data => {
+                console.log("Data processed:", data);
+
+                if (data.error) {
+                    document.getElementById("result").innerHTML = `<p style="color: red;">${data.error}</p>`;
+                } else {
+                    document.getElementById("result").innerHTML = `
+                        <h3>Parsed Resume:</h3>
+                        <p>${data.parsed_resume}</p>
+                        <h3>Matching Result:</h3>
+                        <p>${data.matching_result}</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                document.getElementById("result").innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+            });
+
+            console.log("uploadFile function execution complete");
+        }
+    </script>
+</body>
+</html>
