@@ -36,7 +36,7 @@ cd project_folder
 ```
 
 ## Create and Activate a Virtual Environment
-### Create a virtual environment:
+### 2. Create a virtual environment:
 ```bash
 python -m venv venv
 ```
@@ -55,7 +55,7 @@ source venv/bin/activate
 
 **Dependencies**
 
-```markdown
+
 ### 3. Install Dependencies
 
 Install the required Python packages listed in `requirements.txt`:
@@ -81,7 +81,7 @@ Replace your_api_key with your actual OpenAI API key.
 
 **Run the Application**
 
-```markdown
+
 ### 5. Run the Application
 
 Start the Flask application using the following command:
@@ -111,7 +111,7 @@ flask run
 
 **Usage**
 
-```markdown
+
 ### 6. Usage
 
 1. **Open the App**: In your web browser, navigate to `http://127.0.0.1:5000/`.
