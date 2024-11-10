@@ -41,19 +41,50 @@
             background: gray;
             cursor: not-allowed;
         }
+        #result {
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        #result h3 {
+            color: #007bff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #parsed-resume, #matching-result {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #loading {
+            display: none;
+            font-size: 18px;
+            color: #555;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- Button to open popup -->
     <button class="popup-button" onclick="openPopup()">Upload Resume</button>
 
+    <!-- Overlay and popup for file upload -->
     <div class="overlay" id="overlay"></div>
     <div class="popup" id="popup">
         <h2>Upload Resume</h2>
         <input type="file" id="fileInput" accept=".pdf,.txt">
-        <button class="upload-btn" id="submitButton" type="button" onclick="uploadFile()">Submit</button>
+        <button class="upload-btn" type="button" onclick="uploadFile()">Submit</button>
         <button class="upload-btn" onclick="closePopup()">Cancel</button>
-        <div id="result"></div>
     </div>
+
+    <!-- Loading indicator -->
+    <div id="loading">Loading... Please wait</div>
+
+    <!-- Result display -->
+    <div id="result"></div>
 
     <script>
         function openPopup() {
@@ -65,7 +96,6 @@
         function closePopup() {
             document.getElementById("popup").style.display = "none";
             document.getElementById("overlay").style.display = "none";
-            document.getElementById("result").innerHTML = "";
             console.log("Popup closed");
         }
 
@@ -78,11 +108,13 @@
                 alert("Please select a file to upload.");
                 return;
             }
-
             console.log("File selected:", file);
 
             const formData = new FormData();
             formData.append("file", file);
+
+            closePopup();
+            document.getElementById("loading").style.display = "block";
 
             console.log("Sending fetch request to server...");
 
@@ -103,19 +135,25 @@
             .then(data => {
                 console.log("Data processed:", data);
 
+                document.getElementById("loading").style.display = "none";
                 if (data.error) {
                     document.getElementById("result").innerHTML = `<p style="color: red;">${data.error}</p>`;
                 } else {
                     document.getElementById("result").innerHTML = `
-                        <h3>Parsed Resume:</h3>
-                        <p>${data.parsed_resume}</p>
-                        <h3>Matching Result:</h3>
-                        <p>${data.matching_result}</p>
+                        <div id="parsed-resume">
+                            <h3>Parsed Resume:</h3>
+                            <p>${data.parsed_resume.replace(/\n/g, "<br>")}</p>
+                        </div>
+                        <div id="matching-result">
+                            <h3>Matching Result:</h3>
+                            <p>${data.matching_result.replace(/\n/g, "<br>")}</p>
+                        </div>
                     `;
                 }
             })
             .catch(error => {
                 console.error("Fetch error:", error);
+                document.getElementById("loading").style.display = "none";
                 document.getElementById("result").innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
             });
 
